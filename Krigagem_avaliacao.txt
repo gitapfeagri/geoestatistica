@@ -1,0 +1,39 @@
+'Autor: Danilo F. Bento
+Titulo: Avaliacao da krigagem
+Data: 29/08/2017'
+
+# 1. krigagem ordinaria (k)
+v8 <- variogram(sqrt30 ~ 1, semout30, cutoff = 500000, width = 50000)
+parv8c <- vgm(psill = 0.65, model = 'Exc', range = 100000, nugget = 1.95)
+varv8c <- fit.variogram(v8, parv8c)
+m8c <- plot(v8, model = varv8c, main = 'krigagem')
+
+olho1 <- eyefit(variog(as.geodata(semout30['sqrt30']), max.dist = 500000))
+
+# Cross Validation
+cross8<-krige.cv(sqrt30~1,semout30,model=varv8c)
+
+################ Cross Validation Stats
+
+# Mean error (ME) = ideal 0
+ME.k <- mean(cross8$residual)
+
+# Mean squared error (MSE) ok
+MSE.k <- mean(cross8$residual^2)
+
+# Mean squared deviation ratio (MSDR), ideal 1
+# Conferir se esta correto
+MSDR.k <- sum((cross8$residual)^2/cross8$var1.var)/length(cross8$residual)
+
+# Mean absolute error (MAE) ok
+MAE.k <- mean(abs(cross8$residual))
+
+# root of the mean squared error (RMSE) ok
+RMSE.k <- sqrt(sum(cross8$residual^2)/length(cross8$residual))
+
+# Pearson correlation observed and predicted, ideally 1
+r.k <- cor(cross8$observed, cross8$observed - cross8$residual)
+
+# Pearson ^2 = coeficiente de determinacao
+r2.k <- cor(cross8$observed, cross8$observed - cross8$residual)^2
+
